@@ -1,8 +1,8 @@
 import './setup.js'; // Nạp database test lifecycle hooks
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import app from '../app.js';
-import Todo from '../models/todo.js';
+import app from '../src/app.js';
+import Todo from '../src/models/todo.js';
 
 describe('Todo API Integration Tests', () => {
   

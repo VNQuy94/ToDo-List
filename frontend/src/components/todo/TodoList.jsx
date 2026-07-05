@@ -1,20 +1,40 @@
 import React from 'react';
 import { ClipboardList } from 'lucide-react';
 import TodoItem from './TodoItem';
+import { Skeleton } from '../ui/skeleton';
 
 /**
  * Component danh sách hiển thị các Todo (TodoList)
+ * Nhận thêm prop isPending để chuyển tiếp xuống từng TodoItem.
  */
-export default function TodoList({ todos, onToggle, onDelete, onUpdate, isLoading }) {
+export default function TodoList({ todos, onToggle, onEdit, onDelete, isLoading, isPending }) {
+  // Trạng thái đang tải dữ liệu từ API: Hiển thị danh sách Skeleton
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 space-y-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p className="text-sm text-muted-foreground">Đang tải danh sách công việc...</p>
+      <div className="space-y-3">
+        {[1, 2, 3].map((index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between p-4 border border-border rounded-lg bg-white shadow-sm"
+          >
+            <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
+              {/* Checkbox Skeleton */}
+              <Skeleton className="h-5 w-5 rounded shrink-0" />
+              {/* Tiêu đề Skeleton */}
+              <Skeleton className="h-4 w-3/4 max-w-[250px] rounded" />
+            </div>
+            {/* Nút hành động Skeleton */}
+            <div className="flex items-center space-x-1 shrink-0">
+              <Skeleton className="h-9 w-9 rounded-md" />
+              <Skeleton className="h-9 w-9 rounded-md" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
+  // Trạng thái danh sách trống
   if (!todos || todos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-xl bg-white shadow-sm">
@@ -36,8 +56,9 @@ export default function TodoList({ todos, onToggle, onDelete, onUpdate, isLoadin
           key={todo._id}
           todo={todo}
           onToggle={onToggle}
+          onEdit={onEdit}
           onDelete={onDelete}
-          onUpdate={onUpdate}
+          isPending={isPending}
         />
       ))}
     </div>

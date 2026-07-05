@@ -4,6 +4,7 @@ import { Input } from '../ui/input';
 
 /**
  * Component thanh tìm kiếm (SearchBar)
+ * Tích hợp thuộc tính tiếp cận aria-label.
  */
 export default function SearchBar({ value, onChange }) {
   return (
@@ -14,6 +15,7 @@ export default function SearchBar({ value, onChange }) {
         placeholder="Tìm kiếm công việc..."
         value={value || ''}
         onChange={(e) => onChange && onChange(e.target.value)}
+        aria-label="Tìm kiếm công việc"
         className="pl-9 bg-white border-border focus-visible:ring-primary focus-visible:border-primary"
       />
     </div>
