@@ -1,9 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 
+import swaggerUi from 'swagger-ui-express';
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import todoRouter from './routes/todo.routes.js';
 import { errorHandler } from './middlewares/error.js';
 import { AppError } from './utils/appError.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Đọc tệp cấu hình Swagger JSON
+const swaggerDocument = JSON.parse(
+  readFileSync(path.resolve(__dirname, './swagger.json'), 'utf8')
+);
 
 const app = express();
 
@@ -14,6 +27,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
+
+// Tuyến đường tài liệu API Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/health', (req, res) => {
   res.status(200).json({

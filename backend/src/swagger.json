@@ -1,0 +1,322 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MERN Todo App API Documentation",
+    "version": "1.0.0",
+    "description": "Tài liệu API chi tiết cho ứng dụng quản lý công việc (Todo List) chuẩn Production, sử dụng Express + Mongoose + Zod."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Cổng API cục bộ của ứng dụng thông qua routing chính"
+    }
+  ],
+  "paths": {
+    "/todos": {
+      "get": {
+        "summary": "Lấy danh sách các Todo",
+        "description": "Truy xuất danh sách công việc hiện có hỗ trợ lọc theo trạng thái completed, tìm kiếm theo tiêu đề, và phân trang dữ liệu.",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Từ khóa tìm kiếm tiêu đề Todo (không phân biệt chữ hoa thường)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "completed",
+            "in": "query",
+            "description": "Lọc trạng thái hoàn thành (true / false)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Số thứ tự trang cần lấy",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Số lượng Todo tối đa trên một trang",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách Todo được truy vấn thành công.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Todo" }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "totalItems": { "type": "integer", "example": 1 },
+                        "page": { "type": "integer", "example": 1 },
+                        "limit": { "type": "integer", "example": 10 },
+                        "totalPages": { "type": "integer", "example": 1 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Tạo mới một Todo",
+        "description": "Tạo công việc mới với tiêu đề hợp lệ (độ dài từ 3 đến 100 ký tự).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Tiêu đề của công việc cần thêm",
+                    "example": "Học lập trình NodeJS"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo Todo thành công.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/Todo" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu yêu cầu gửi lên không hợp lệ (ví dụ tiêu đề quá ngắn hoặc rỗng).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "status": { "type": "string", "example": "fail" },
+                    "message": { "type": "string", "example": "Dữ liệu yêu cầu gửi lên không hợp lệ." },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "field": { "type": "string", "example": "body.title" },
+                          "message": { "type": "string", "example": "Tiêu đề phải chứa ít nhất 3 ký tự." }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/todos/{id}": {
+      "put": {
+        "summary": "Cập nhật thông tin Todo",
+        "description": "Cập nhật tiêu đề hoặc trạng thái hoàn thành của Todo bằng cách cung cấp mã ID hợp lệ (ObjectId).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Mã ID 24 ký tự dạng ObjectId của Todo cần sửa",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Tiêu đề mới (tùy chọn)",
+                    "example": "Học lập trình NodeJS nâng cao"
+                  },
+                  "completed": {
+                    "type": "boolean",
+                    "description": "Trạng thái hoàn thành (tùy chọn)",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/Todo" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu gửi lên sai định dạng hoặc truyền ID không phải ObjectId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "message": { "type": "string", "example": "Giá trị 'abc' của trường '_id' không hợp lệ." }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy Todo với ID tương ứng.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "message": { "type": "string", "example": "Không tìm thấy Todo với ID được yêu cầu." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa một Todo",
+        "description": "Xóa bỏ công việc khỏi cơ sở dữ liệu dựa trên mã ID truyền vào.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Mã ID 24 ký tự dạng ObjectId của Todo cần xóa",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa Todo thành công.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Xóa Todo thành công." },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "example": "6a4a08a9a4ff93449b7ec282" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy Todo với ID tương ứng.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "message": { "type": "string", "example": "Không tìm thấy Todo với ID được yêu cầu." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "6a4a08a9a4ff93449b7ec282"
+          },
+          "title": {
+            "type": "string",
+            "example": "Học lập trình NodeJS"
+          },
+          "completed": {
+            "type": "boolean",
+            "example": false
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-07-05T07:32:57.630Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-07-05T07:33:44.418Z"
+          },
+          "__v": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      }
+    }
+  }
+}
