@@ -56,9 +56,10 @@ class TodoService {
    * Cập nhật Todo.
    */
   async updateTodo(id, updateData) {
+    // returnDocument: 'after' (thay cho new: true đã lỗi thời) đảm bảo trả về dữ liệu mới nhất sau khi update
     // runValidators: true đảm bảo kiểm tra các điều kiện validate của Schema khi cập nhật
     const todo = await Todo.findByIdAndUpdate(id, updateData, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     });
 
