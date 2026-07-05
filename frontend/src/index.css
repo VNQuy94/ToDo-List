@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Custom Premium Gold/Brass Theme Colors */
+    --background: 40 20% 98%;      /* #FAFAF9 (Warm Gray/Stone 50) */
+    --foreground: 215 16% 17%;     /* #1F2937 (Text Dark) */
+
+    --card: 0 0% 100%;             /* #FFFFFF */
+    --card-foreground: 215 16% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 16% 17%;
+
+    --primary: 40 48% 57%;         /* #C8A45A (Luxury Gold) */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF (White text) */
+    --primary-hover: 40 50% 47%;   /* #B68E3C (Darker Gold) */
+
+    --secondary: 43 72% 69%;       /* #E7C777 (Warm Accent Gold) */
+    --secondary-foreground: 215 16% 17%;
+
+    --muted: 40 10% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 43 72% 69%;          /* #E7C777 */
+    --accent-foreground: 215 16% 17%;
+
+    --destructive: 0 72% 51%;      /* #DC2626 (Danger Red) */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 36%;        /* #16A34A (Success Green) */
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;         /* #E5E7EB (Border light) */
+    --input: 220 13% 91%;
+    --ring: 40 48% 57%;            /* Focus ring gold */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Mặc định giữ giao diện sáng làm chủ đạo sang trọng cho Todo app này */
+    --background: 215 16% 17%;
+    --foreground: 40 20% 98%;
+    --card: 215 16% 22%;
+    --card-foreground: 40 20% 98%;
+    --popover: 215 16% 22%;
+    --popover-foreground: 40 20% 98%;
+    --primary: 40 48% 57%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 40 50% 47%;
+    --secondary: 43 72% 69%;
+    --secondary-foreground: 40 20% 98%;
+    --muted: 215 16% 22%;
+    --muted-foreground: 215 16% 67%;
+    --accent: 43 72% 69%;
+    --accent-foreground: 40 20% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 16% 27%;
+    --input: 215 16% 27%;
+    --ring: 40 48% 57%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
