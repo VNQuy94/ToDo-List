@@ -1,0 +1,19 @@
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# Local databases / Docker volumes
+mongo_data/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.log

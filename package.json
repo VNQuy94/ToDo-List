@@ -1,0 +1,13 @@
+{
+  "name": "todo-list-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-quality MERN Todo application",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
