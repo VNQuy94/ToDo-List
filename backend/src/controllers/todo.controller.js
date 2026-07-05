@@ -49,7 +49,7 @@ class TodoController {
       res.status(200).json({
         success: true,
         message: 'Xóa Todo thành công.',
-        id: todo._id,
+        data: { id: todo._id },
       });
     } catch (error) {
       next(error);

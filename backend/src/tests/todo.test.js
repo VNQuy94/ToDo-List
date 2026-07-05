@@ -141,7 +141,7 @@ describe('Todo API Integration Tests', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.id).toBe(todo._id.toString());
+      expect(res.body.data.id).toBe(todo._id.toString());
 
       const deletedInDb = await Todo.findById(todo._id);
       expect(deletedInDb).toBeNull();
