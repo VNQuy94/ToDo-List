@@ -14,10 +14,8 @@ const PORT = process.env.PORT || 5000;
  * sau khi đã thiết lập thành công kết nối tới cơ sở dữ liệu MongoDB.
  */
 const startServer = async () => {
-  // 1. Kết nối tới database trước
   await connectDB();
 
-  // 2. Lắng nghe yêu cầu HTTP sau khi DB sẵn sàng
   app.listen(PORT, () => {
     console.log(`[Server] Máy chủ đang chạy ở chế độ [${process.env.NODE_ENV || 'development'}] trên cổng ${PORT}`);
   });
