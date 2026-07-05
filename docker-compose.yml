@@ -1,17 +1,90 @@
-version: '3.8'
 
 services:
+  # ==========================================
+  # 1. Dịch vụ Cơ sở dữ liệu MongoDB
+  # ==========================================
   mongodb:
-    image: mongo:6.0
-    container_name: todo_mongodb
-    restart: always
+    image: mongo:${MONGO_VERSION}
+    container_name: ${MONGO_CONTAINER_NAME}
+    restart: unless-stopped
     ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
+      - "${MONGO_PORT}:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - todo_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ==========================================
+  # 2. Dịch vụ Express API Server (Backend)
+  # ==========================================
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT}:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Ghi đè MONGO_URI để kết nối thông qua tên dịch vụ nội bộ của Docker thay vì localhost
+      - MONGO_URI=mongodb://mongodb:27017/todo_db
+    volumes:
+      # Mount mã nguồn để hỗ trợ Live-Reload thời gian thực
+      - ./backend:/app
+      # Tránh ghi đè node_modules của Container bằng node_modules của máy vật lý
+      - /app/node_modules
+    networks:
+      - todo_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:' + (process.env.PORT || 5000) + '/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ==========================================
+  # 3. Dịch vụ React Vite App (Frontend)
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT}:5173"
+    env_file:
+      - ./frontend/.env
+    environment:
+      - VITE_API_URL=http://backend:5000
+    volumes:
+      # Mount mã nguồn để hỗ trợ Hot Module Replacement (HMR) khi phát triển
+      - ./frontend:/app
+      # Tránh ghi đè node_modules của Container bằng node_modules của máy vật lý
+      - /app/node_modules
+    networks:
+      - todo_network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+# ==========================================
+# Cấu hình Mạng và Ổ đĩa lưu trữ dùng chung
+# ==========================================
+networks:
+  todo_network:
+    driver: bridge
 
 volumes:
   mongo_data:

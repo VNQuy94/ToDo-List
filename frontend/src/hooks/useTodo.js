@@ -31,7 +31,19 @@ export default function useTodo() {
 
   // Trạng thái bộ lọc tìm kiếm
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filter, setFilter] = useState('all');
+
+  // Debounce tìm kiếm (chờ 500ms không gõ phím mới cập nhật debouncedSearch để gọi API)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
 
   /**
    * Hàm gọi API lấy danh sách Todo từ backend
@@ -41,8 +53,8 @@ export default function useTodo() {
     setError(null);
     try {
       const params = {};
-      if (search.trim()) {
-        params.search = search.trim();
+      if (debouncedSearch.trim()) {
+        params.search = debouncedSearch.trim();
       }
       if (filter !== 'all') {
         params.completed = filter === 'completed';
@@ -62,9 +74,9 @@ export default function useTodo() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, filter]);
+  }, [debouncedSearch, filter]);
 
-  // Hook nạp dữ liệu tự động khi mount và mỗi khi bộ lọc thay đổi
+  // Hook nạp dữ liệu tự động khi mount và mỗi khi bộ lọc/tên tìm kiếm debounced thay đổi
   useEffect(() => {
     fetchTodos();
   }, [fetchTodos]);
