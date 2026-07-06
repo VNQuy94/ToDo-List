@@ -116,11 +116,12 @@ export default function useTodo() {
       const response = await getTodosApi(params);
       if (response && response.success) {
         setTodos(response.data || []);
-        setPagination(response.pagination || {
-          totalItems: response.data?.length || 0,
-          page: 1,
-          limit: 10,
-          totalPages: 1,
+        const backendPagination = response.pagination || {};
+        setPagination({
+          totalItems: parseInt(backendPagination.totalItems || '0', 10),
+          page: parseInt(backendPagination.page || '1', 10),
+          limit: parseInt(backendPagination.limit || '10', 10),
+          totalPages: parseInt(backendPagination.totalPages || '1', 10),
         });
       } else {
         throw new Error('Server responded with a failure status.');
