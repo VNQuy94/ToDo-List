@@ -3,11 +3,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
-/**
- * Component Form thêm Todo mới (TodoForm)
- * Hỗ trợ nhãn Label tiếp cận dễ dàng (Accessibility),
- * tự động khóa form khi có tiến trình mạng đang xử lý (isPending).
- */
+// TodoForm Component
 export default function TodoForm({ value, onChange, onSubmit, isCreating, isPending, error }) {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,18 +12,17 @@ export default function TodoForm({ value, onChange, onSubmit, isCreating, isPend
 
   return (
     <div className="space-y-2 w-full">
-      {/* Label được đưa vào trong form và có htmlFor trỏ tới ID của Input */}
       <label
         htmlFor="new-todo-title"
         className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block"
       >
-        Thêm việc mới
+        Add new task
       </label>
       <form onSubmit={handleSubmit} className="flex gap-2 w-full">
         <Input
           id="new-todo-title"
           type="text"
-          placeholder="Thêm công việc mới (tối thiểu 3 ký tự)..."
+          placeholder="Add a new task (min 3 chars)..."
           value={value || ''}
           onChange={(e) => onChange && onChange(e.target.value)}
           disabled={isPending}
@@ -43,12 +38,12 @@ export default function TodoForm({ value, onChange, onSubmit, isCreating, isPend
           {isCreating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Đang thêm...</span>
+              <span>Adding...</span>
             </>
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              <span>Thêm</span>
+              <span>Add</span>
             </>
           )}
         </Button>

@@ -3,38 +3,29 @@ import { toast } from 'sonner';
 import { getTodosApi, createTodoApi, updateTodoApi, deleteTodoApi } from '@/api/todo.api';
 import { todoSchema } from '@/schemas/todo.schema';
 
-/**
- * Custom Hook useTodo
- * Quản lý toàn bộ State, logic kiểm định (Zod) và các cuộc gọi API CRUD cho tính năng Todo.
- * Phân tách hoàn toàn Business Logic ra khỏi tầng hiển thị JSX.
- */
+// Hook to manage todo state and operations
 export default function useTodo() {
-  // Trạng thái danh sách Todo từ Backend
   const [todos, setTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Trạng thái khi tạo mới Todo
   const [newTitle, setNewTitle] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [formError, setFormError] = useState(null);
 
-  // Trạng thái chỉnh sửa Todo bằng Dialog
   const [editingTodo, setEditingTodo] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [dialogError, setDialogError] = useState(null);
 
-  // Trạng thái xác nhận xóa Todo bằng AlertDialog
   const [todoToDeleteId, setTodoToDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Trạng thái bộ lọc tìm kiếm
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
-  // Debounce tìm kiếm (chờ 500ms không gõ phím mới cập nhật debouncedSearch để gọi API)
+  // Debounce search input (500ms delay)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
@@ -45,9 +36,7 @@ export default function useTodo() {
     };
   }, [search]);
 
-  /**
-   * Hàm gọi API lấy danh sách Todo từ backend
-   */
+  // Fetch todos from backend
   const fetchTodos = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -64,31 +53,28 @@ export default function useTodo() {
       if (response && response.success) {
         setTodos(response.data || []);
       } else {
-        throw new Error('Máy chủ phản hồi trạng thái thất bại.');
+        throw new Error('Server responded with a failure status.');
       }
     } catch (err) {
-      console.error('Lỗi khi tải danh sách Todos:', err);
+      console.error('Failed to fetch todos:', err);
       setError({
-        message: err.response?.data?.message || err.message || 'Không thể kết nối đến máy chủ backend.',
+        message: err.response?.data?.message || err.message || 'Unable to connect to the backend server.',
       });
     } finally {
       setIsLoading(false);
     }
   }, [debouncedSearch, filter]);
 
-  // Hook nạp dữ liệu tự động khi mount và mỗi khi bộ lọc/tên tìm kiếm debounced thay đổi
   useEffect(() => {
     fetchTodos();
   }, [fetchTodos]);
 
-  /**
-   * Hàm xử lý tạo mới Todo qua API POST
-   */
+  // Create a new todo
   const handleCreate = async (e) => {
     if (e) e.preventDefault();
     const trimmedTitle = newTitle.trim();
 
-    // Client-side Validation sử dụng Zod schema
+    // Client-side validation using Zod
     const validation = todoSchema.safeParse({ title: trimmedTitle });
     if (!validation.success) {
       setFormError(validation.error.errors[0].message);
@@ -102,59 +88,53 @@ export default function useTodo() {
       const response = await createTodoApi({ title: trimmedTitle });
       
       if (response && response.success) {
-        toast.success('Đã thêm công việc mới thành công!');
-        setNewTitle(''); // Xóa trắng ô input
-        fetchTodos();    // Làm mới danh sách công việc từ backend
+        toast.success('Task added successfully!');
+        setNewTitle('');
+        fetchTodos();
       } else {
-        throw new Error('Không thể thêm công việc mới.');
+        throw new Error('Failed to add task.');
       }
     } catch (err) {
-      console.error('Lỗi khi thêm Todo mới:', err);
+      console.error('Error creating todo:', err);
       const backendValidationError = err.response?.data?.errors?.[0]?.message;
       const generalErrorMessage = err.response?.data?.message;
-      const errMsg = backendValidationError || generalErrorMessage || 'Lỗi kết nối máy chủ.';
+      const errMsg = backendValidationError || generalErrorMessage || 'Server connection error.';
 
       setFormError(errMsg);
-      toast.error('Thêm công việc mới thất bại.');
+      toast.error('Failed to add task.');
     } finally {
       setIsCreating(false);
     }
   };
 
-  /**
-   * Xử lý bật/tắt trạng thái hoàn thành (Toggle checkbox) -> Gọi API cập nhật
-   */
+  // Toggle todo completed status
   const handleToggle = async (id, completed) => {
     try {
       const response = await updateTodoApi(id, { completed });
       if (response && response.success) {
-        toast.success(completed ? 'Đã đánh dấu hoàn thành công việc!' : 'Đã mở lại công việc.');
-        fetchTodos(); // Làm mới danh sách
+        toast.success(completed ? 'Task marked as completed!' : 'Task reopened.');
+        fetchTodos();
       } else {
-        throw new Error('Cập nhật trạng thái thất bại.');
+        throw new Error('Failed to update status.');
       }
     } catch (err) {
-      console.error('Lỗi khi cập nhật trạng thái:', err);
-      toast.error('Không thể cập nhật trạng thái công việc.');
+      console.error('Error toggling todo:', err);
+      toast.error('Failed to update task status.');
     }
   };
 
-  /**
-   * Lưu thông tin Todo cần sửa vào state để mở Dialog
-   */
+  // Prepare edit state
   const handleEditClick = (todo) => {
     setEditingTodo(todo);
     setEditTitle(todo.title);
     setDialogError(null);
   };
 
-  /**
-   * Gửi yêu cầu cập nhật tiêu đề trên Dialog (API PUT)
-   */
+  // Save edited todo title
   const handleSaveEdit = async () => {
     const trimmedTitle = editTitle.trim();
 
-    // Client-side Validation sử dụng Zod schema
+    // Client-side validation using Zod
     const validation = todoSchema.safeParse({ title: trimmedTitle });
     if (!validation.success) {
       setDialogError(validation.error.errors[0].message);
@@ -167,85 +147,75 @@ export default function useTodo() {
     try {
       const response = await updateTodoApi(editingTodo._id, { title: trimmedTitle });
       if (response && response.success) {
-        toast.success('Cập nhật tiêu đề công việc thành công!');
-        setEditingTodo(null); // Đóng Dialog
-        fetchTodos();         // Làm mới danh sách
+        toast.success('Task title updated successfully!');
+        setEditingTodo(null);
+        fetchTodos();
       } else {
-        throw new Error('Không thể lưu cập nhật.');
+        throw new Error('Failed to save updates.');
       }
     } catch (err) {
-      console.error('Lỗi khi cập nhật tiêu đề Todo:', err);
+      console.error('Error updating todo title:', err);
       const backendValidationError = err.response?.data?.errors?.[0]?.message;
       const generalErrorMessage = err.response?.data?.message;
-      const errMsg = backendValidationError || generalErrorMessage || 'Lỗi kết nối máy chủ.';
+      const errMsg = backendValidationError || generalErrorMessage || 'Server connection error.';
 
       setDialogError(errMsg);
-      toast.error('Cập nhật công việc thất bại.');
+      toast.error('Failed to update task.');
     } finally {
       setIsUpdating(false);
     }
   };
 
-  /**
-   * Lưu ID của Todo muốn xóa để mở AlertDialog xác nhận
-   */
+  // Prepare delete ID
   const handleDeleteClick = (id) => {
     setTodoToDeleteId(id);
   };
 
-  /**
-   * Gửi yêu cầu xóa Todo thực tế qua API DELETE
-   */
+  // Confirm and delete todo
   const handleConfirmDelete = async (e) => {
-    if (e) e.preventDefault(); // Ngăn Dialog tự đóng trước khi API hoàn tất
+    if (e) e.preventDefault();
     setIsDeleting(true);
 
     try {
       const response = await deleteTodoApi(todoToDeleteId);
       if (response && response.success) {
-        toast.success('Đã xóa công việc thành công!');
-        setTodoToDeleteId(null); // Đóng AlertDialog
-        fetchTodos();            // Làm mới danh sách công việc
+        toast.success('Task deleted successfully!');
+        setTodoToDeleteId(null);
+        fetchTodos();
       } else {
-        throw new Error('Xóa công việc thất bại.');
+        throw new Error('Failed to delete task.');
       }
     } catch (err) {
-      console.error('Lỗi khi xóa Todo:', err);
-      const generalErrorMessage = err.response?.data?.message || err.message || 'Lỗi kết nối máy chủ.';
+      console.error('Error deleting todo:', err);
+      const generalErrorMessage = err.response?.data?.message || err.message || 'Server connection error.';
       toast.error(generalErrorMessage);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Trạng thái chung khi có bất kỳ tiến trình mạng nào đang chạy
   const isPending = isLoading || isCreating || isUpdating || isDeleting;
 
   return {
-    // Trạng thái & Action nạp danh sách
     todos,
     isLoading,
     isPending,
     error,
     fetchTodos,
     
-    // Tìm kiếm & Lọc
     search,
     setSearch,
     filter,
     setFilter,
 
-    // Tạo mới Todo
     newTitle,
     setNewTitle,
     isCreating,
     formError,
     handleCreate,
 
-    // Cập nhật Todo (Toggle)
     handleToggle,
 
-    // Chỉnh sửa tiêu đề Todo (Dialog)
     editingTodo,
     setEditingTodo,
     editTitle,
@@ -255,7 +225,6 @@ export default function useTodo() {
     handleEditClick,
     handleSaveEdit,
 
-    // Xóa Todo (AlertDialog)
     todoToDeleteId,
     setTodoToDeleteId,
     isDeleting,

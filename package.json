@@ -2,13 +2,21 @@
   "name": "todo-list-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Production-quality MERN Todo application",
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-    "test": "pnpm --filter backend test"
+    "test": "pnpm --filter backend test",
+    "seed": "node scripts/seed.js",
+    "seed:clear": "node scripts/clear.js",
+    "seed:reset": "node scripts/reset.js"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mongoose": "^9.7.3"
   }
 }

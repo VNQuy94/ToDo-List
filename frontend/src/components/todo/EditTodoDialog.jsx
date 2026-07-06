@@ -11,10 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-/**
- * Component Dialog chỉnh sửa công việc (EditTodoDialog)
- * Là linh kiện UI thuần túy (Presentation Component).
- */
+// EditTodoDialog Component
 export default function EditTodoDialog({
   isOpen,
   onClose,
@@ -28,9 +25,9 @@ export default function EditTodoDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose && onClose()}>
       <DialogContent className="sm:max-w-[425px] bg-white border border-border rounded-xl">
         <DialogHeader>
-          <DialogTitle className="text-lg font-bold text-foreground">Chỉnh sửa công việc</DialogTitle>
+          <DialogTitle className="text-lg font-bold text-foreground">Edit Task</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Thay đổi tiêu đề của công việc đã chọn. Tiêu đề phải chứa ít nhất 3 ký tự.
+            Change the title of the selected task. The title must contain at least 3 characters.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-1.5">
@@ -59,7 +56,7 @@ export default function EditTodoDialog({
             disabled={isUpdating}
             className="border-border hover:bg-stone-50 text-foreground"
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             type="button"
@@ -70,10 +67,10 @@ export default function EditTodoDialog({
             {isUpdating ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Đang lưu...</span>
+                <span>Saving...</span>
               </>
             ) : (
-              <span>Lưu thay đổi</span>
+              <span>Save changes</span>
             )}
           </Button>
         </DialogFooter>

@@ -1,7 +1,6 @@
-
 services:
   # ==========================================
-  # 1. Dịch vụ Cơ sở dữ liệu MongoDB
+  # 1. MongoDB Database Service
   # ==========================================
   mongodb:
     image: mongo:${MONGO_VERSION}
@@ -9,19 +8,22 @@ services:
     restart: unless-stopped
     ports:
       - "${MONGO_PORT}:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
     volumes:
       - mongo_data:/data/db
     networks:
       - todo_network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "${MONGO_ROOT_USER}", "--password", "${MONGO_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 3
       start_period: 5s
 
   # ==========================================
-  # 2. Dịch vụ Express API Server (Backend)
+  # 2. Express API Server (Backend)
   # ==========================================
   backend:
     build:
@@ -34,12 +36,12 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      # Ghi đè MONGO_URI để kết nối thông qua tên dịch vụ nội bộ của Docker thay vì localhost
-      - MONGO_URI=mongodb://mongodb:27017/todo_db
+      # Connect via internal container hostname instead of localhost
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/todo_db?authSource=admin
     volumes:
-      # Mount mã nguồn để hỗ trợ Live-Reload thời gian thực
+      # Mount source code for live-reload
       - ./backend:/app
-      # Tránh ghi đè node_modules của Container bằng node_modules của máy vật lý
+      # Prevent host node_modules from overwriting container dependencies
       - /app/node_modules
     networks:
       - todo_network
@@ -54,7 +56,7 @@ services:
       start_period: 5s
 
   # ==========================================
-  # 3. Dịch vụ React Vite App (Frontend)
+  # 3. React Vite App (Frontend)
   # ==========================================
   frontend:
     build:
@@ -69,9 +71,9 @@ services:
     environment:
       - VITE_API_URL=http://backend:5000
     volumes:
-      # Mount mã nguồn để hỗ trợ Hot Module Replacement (HMR) khi phát triển
+      # Mount source code for HMR
       - ./frontend:/app
-      # Tránh ghi đè node_modules của Container bằng node_modules của máy vật lý
+      # Prevent host node_modules from overwriting container dependencies
       - /app/node_modules
     networks:
       - todo_network
@@ -79,8 +81,32 @@ services:
       backend:
         condition: service_healthy
 
-# ==========================================
-# Cấu hình Mạng và Ổ đĩa lưu trữ dùng chung
+  # ==========================================
+  # 4. Database Seeder (One-shot Tool)
+  # ==========================================
+  db-seeder:
+    image: node:20-alpine
+    container_name: todo-db-seeder
+    profiles:
+      - tools
+    volumes:
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ./backend/src/models:/app/backend/src/models
+    environment:
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/todo_db?authSource=admin
+    networks:
+      - todo_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    working_dir: /app
+    command: sh -c "npm install -g pnpm && pnpm install --prod && node scripts/seed.js"
+
+# ==========================================================
+# Network and Volume Configurations
 # ==========================================
 networks:
   todo_network:

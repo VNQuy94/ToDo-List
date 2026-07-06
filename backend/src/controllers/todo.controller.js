@@ -1,12 +1,7 @@
 import todoService from '../services/todo.service.js';
 
-/**
- * Tầng Bộ Điều Khiển (Controller Layer) chỉ đảm nhiệm xử lý giao thức HTTP:
- * - Trích xuất tham số từ request.
- * - Gọi các service nghiệp vụ thích hợp.
- * - Trả về phản hồi JSON chuẩn hóa cùng HTTP status code tương ứng.
- */
 class TodoController {
+  // Get all todos
   getTodos = async (req, res, next) => {
     try {
       const result = await todoService.getTodos(req.query);
@@ -19,6 +14,7 @@ class TodoController {
     }
   };
 
+  // Create a new todo
   createTodo = async (req, res, next) => {
     try {
       const todo = await todoService.createTodo(req.body);
@@ -31,6 +27,7 @@ class TodoController {
     }
   };
 
+  // Update an existing todo by ID
   updateTodo = async (req, res, next) => {
     try {
       const todo = await todoService.updateTodo(req.params.id, req.body);
@@ -43,12 +40,13 @@ class TodoController {
     }
   };
 
+  // Delete an existing todo by ID
   deleteTodo = async (req, res, next) => {
     try {
       const todo = await todoService.deleteTodo(req.params.id);
       res.status(200).json({
         success: true,
-        message: 'Xóa Todo thành công.',
+        message: 'Todo deleted successfully.',
         data: { id: todo._id },
       });
     } catch (error) {

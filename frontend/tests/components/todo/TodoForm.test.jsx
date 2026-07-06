@@ -5,7 +5,7 @@ import TodoForm from '@/components/todo/TodoForm';
 
 describe('TodoForm Component', () => {
   it('should render form elements correctly (Arrange/Assert)', () => {
-    // Arrange: Render component với giá trị trống
+    // Arrange: Render component with empty value
     render(
       <TodoForm
         value=""
@@ -17,10 +17,10 @@ describe('TodoForm Component', () => {
       />
     );
 
-    // Assert: Xác minh các phần tử giao diện tồn tại đúng nhãn tiếp cận
-    expect(screen.getByLabelText('Thêm việc mới')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Thêm công việc mới/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Thêm/i })).toBeInTheDocument();
+    // Assert: Verify UI elements and accessibility labels
+    expect(screen.getByLabelText('Add new task')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Add a new task/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add/i })).toBeInTheDocument();
   });
 
   it('should trigger onChange callback when typing (Arrange/Act/Assert)', () => {
@@ -38,21 +38,21 @@ describe('TodoForm Component', () => {
       />
     );
 
-    // Act: Nhập nội dung vào Input
-    const input = screen.getByPlaceholderText(/Thêm công việc mới/i);
-    fireEvent.change(input, { target: { value: 'Học React 19' } });
+    // Act: Type inside Input
+    const input = screen.getByPlaceholderText(/Add a new task/i);
+    fireEvent.change(input, { target: { value: 'Learn React 19' } });
 
-    // Assert: Đảm bảo callback onChange được kích hoạt với tham số chính xác
-    expect(handleChange).toHaveBeenCalledWith('Học React 19');
+    // Assert: Verify callback onChange triggers correctly
+    expect(handleChange).toHaveBeenCalledWith('Learn React 19');
   });
 
   it('should trigger onSubmit callback on form submit (Arrange/Act/Assert)', () => {
     const handleSubmit = vi.fn();
 
-    // Arrange: Render với tiêu đề hợp lệ (dài >= 3 ký tự)
+    // Arrange: Render with valid value (>= 3 characters)
     render(
       <TodoForm
-        value="Học React 19"
+        value="Learn React 19"
         onChange={() => {}}
         onSubmit={handleSubmit}
         isCreating={false}
@@ -61,19 +61,19 @@ describe('TodoForm Component', () => {
       />
     );
 
-    // Act: Click nút Thêm
-    const submitButton = screen.getByRole('button', { name: /Thêm/i });
+    // Act: Click submit button
+    const submitButton = screen.getByRole('button', { name: /Add/i });
     fireEvent.click(submitButton);
 
-    // Assert: Xác minh callback onSubmit được gọi
+    // Assert: Verify onSubmit triggers
     expect(handleSubmit).toHaveBeenCalled();
   });
 
   it('should disable inputs and show spinner when isPending is true (Arrange/Assert)', () => {
-    // Arrange: Render với trạng thái isPending = true
+    // Arrange: Render with isPending = true
     render(
       <TodoForm
-        value="Học React 19"
+        value="Learn React 19"
         onChange={() => {}}
         onSubmit={() => {}}
         isCreating={true}
@@ -82,18 +82,18 @@ describe('TodoForm Component', () => {
       />
     );
 
-    // Assert: Đảm bảo ô input bị khóa và nút bấm chuyển sang trạng thái "Đang thêm..."
-    const input = screen.getByPlaceholderText(/Thêm công việc mới/i);
-    const submitButton = screen.getByRole('button', { name: /Đang thêm.../i });
+    // Assert: Verify inputs disabled and button text shows spinner state
+    const input = screen.getByPlaceholderText(/Add a new task/i);
+    const submitButton = screen.getByRole('button', { name: /Adding.../i });
 
     expect(input).toBeDisabled();
     expect(submitButton).toBeDisabled();
   });
 
   it('should display error message when validation fails (Arrange/Assert)', () => {
-    const errorMessage = 'Tiêu đề phải chứa ít nhất 3 ký tự.';
+    const errorMessage = 'Title must be at least 3 characters long.';
 
-    // Arrange: Render với prop error
+    // Arrange: Render with error prop
     render(
       <TodoForm
         value=""
@@ -105,7 +105,7 @@ describe('TodoForm Component', () => {
       />
     );
 
-    // Assert: Xác minh tin nhắn lỗi hiển thị đúng trên giao diện
+    // Assert: Verify error text is displayed
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 });

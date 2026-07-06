@@ -3,10 +3,7 @@ import { Trash2, Edit2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 
-/**
- * Component hiển thị từng hàng Todo đơn lẻ (TodoItem)
- * Hỗ trợ các thẻ tiếp cận aria-label và tự động khóa tương tác khi có cuộc gọi mạng đang chờ (isPending).
- */
+// TodoItem Component
 export default function TodoItem({ todo, onToggle, onEdit, onDelete, isPending }) {
   return (
     <div
@@ -15,7 +12,6 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isPending }
       }`}
     >
       <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
-        {/* Checkbox của shadcn/ui */}
         <Checkbox
           id={`todo-${todo._id}`}
           checked={todo.completed}
@@ -34,22 +30,20 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isPending }
       </div>
 
       <div className="flex items-center space-x-1 shrink-0">
-        {/* Nút sửa - Có nhãn tiếp cận aria-label */}
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Chỉnh sửa công việc"
+          aria-label="Edit task"
           className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/5 focus-visible:ring-primary"
           onClick={() => onEdit && onEdit(todo)}
           disabled={todo.completed || isPending}
         >
           <Edit2 className="h-4 w-4" />
         </Button>
-        {/* Nút xóa - Có nhãn tiếp cận aria-label */}
         <Button
           size="icon"
           variant="ghost"
-          aria-label="Xóa công việc"
+          aria-label="Delete task"
           className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/5 focus-visible:ring-destructive"
           onClick={() => onDelete && onDelete(todo._id)}
           disabled={isPending}

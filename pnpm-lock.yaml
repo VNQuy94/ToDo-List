@@ -6,7 +6,14 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+      mongoose:
+        specifier: ^9.7.3
+        version: 9.7.3
 
   backend:
     dependencies:

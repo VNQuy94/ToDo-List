@@ -1,71 +1,62 @@
 import { z } from 'zod';
 
-// Regex kiểm tra định dạng ObjectId (24 ký tự hệ thập lục phân)
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
-/**
- * Schema kiểm tra dữ liệu khi tạo mới Todo.
- */
+// Schema for creating a new todo
 export const createTodoSchema = z.object({
   body: z.object({
     title: z
       .string({
-        required_error: 'Tiêu đề Todo là bắt buộc.',
+        required_error: 'Todo title is required.',
       })
       .trim()
-      .min(3, { message: 'Tiêu đề phải chứa ít nhất 3 ký tự.' })
-      .max(100, { message: 'Tiêu đề không được vượt quá 100 ký tự.' }),
+      .min(3, { message: 'Title must be at least 3 characters long.' })
+      .max(100, { message: 'Title cannot exceed 100 characters.' }),
   }),
 });
 
-/**
- * Schema kiểm tra dữ liệu khi cập nhật Todo.
- */
+// Schema for updating an existing todo
 export const updateTodoSchema = z.object({
   params: z.object({
-    id: z.string().regex(objectIdRegex, { message: 'Mã ID của Todo không hợp lệ.' }),
+    id: z.string().regex(objectIdRegex, { message: 'Invalid Todo ID format.' }),
   }),
   body: z
     .object({
       title: z
         .string()
         .trim()
-        .min(3, { message: 'Tiêu đề phải chứa ít nhất 3 ký tự.' })
-        .max(100, { message: 'Tiêu đề không được vượt quá 100 ký tự.' })
+        .min(3, { message: 'Title must be at least 3 characters long.' })
+        .max(100, { message: 'Title cannot exceed 100 characters.' })
         .optional(),
       completed: z
         .boolean({
-          invalid_type_error: 'Trạng thái completed phải là true hoặc false.',
+          invalid_type_error: 'Completed status must be a boolean (true or false).',
         })
         .optional(),
     })
     .refine((data) => data.title !== undefined || data.completed !== undefined, {
-      message: 'Bạn phải cập nhật tiêu đề hoặc trạng thái completed.',
+      message: 'You must update either the title or completed status.',
     }),
 });
 
-/**
- * Schema kiểm tra ID khi xóa Todo.
- */
+// Schema for deleting a todo
 export const deleteTodoSchema = z.object({
   params: z.object({
-    id: z.string().regex(objectIdRegex, { message: 'Mã ID của Todo không hợp lệ.' }),
+    id: z.string().regex(objectIdRegex, { message: 'Invalid Todo ID format.' }),
   }),
 });
 
-/**
- * Schema kiểm tra dữ liệu query parameters khi lấy danh sách Todo (có phân trang và tìm kiếm).
- */
+// Schema for querying todos (supports search, filters, pagination)
 export const getTodosSchema = z.object({
   query: z.object({
     search: z.string().trim().optional(),
-    // Chuyển đổi kiểu dữ liệu query string 'true'/'false' sang Boolean thực tế
+    // Parse query string boolean values
     completed: z.preprocess((val) => {
       if (val === 'true') return true;
       if (val === 'false') return false;
       return undefined;
     }, z.boolean().optional()),
-    // Chuyển đổi kiểu dữ liệu query string sang Number thực tế
+    // Parse query string numbers
     page: z.preprocess((val) => (val ? parseInt(val, 10) : undefined), z.number().int().positive().optional()),
     limit: z.preprocess((val) => (val ? parseInt(val, 10) : undefined), z.number().int().positive().optional()),
   }),

@@ -1,0 +1,20 @@
+[
+  { "title": "Set up project repository and initialize Git", "completed": true },
+  { "title": "Install Node.js and configure pnpm workspace", "completed": true },
+  { "title": "Design MongoDB schema for Todo collection", "completed": true },
+  { "title": "Implement Express REST API with CRUD endpoints", "completed": true },
+  { "title": "Write Zod validation schemas for request payloads", "completed": true },
+  { "title": "Add global error handling middleware", "completed": true },
+  { "title": "Set up Vitest and write integration tests for API", "completed": true },
+  { "title": "Configure Vite and scaffold React frontend", "completed": true },
+  { "title": "Build TodoList and TodoItem components", "completed": false },
+  { "title": "Implement search and filter functionality", "completed": false },
+  { "title": "Add debounce to search input", "completed": false },
+  { "title": "Connect frontend to backend API using Axios", "completed": false },
+  { "title": "Write unit tests for all React components", "completed": false },
+  { "title": "Dockerize backend with multi-stage build", "completed": false },
+  { "title": "Dockerize frontend with Vite production build", "completed": false },
+  { "title": "Create docker-compose.yml with healthchecks", "completed": false },
+  { "title": "Create database seeding infrastructure", "completed": false },
+  { "title": "Write project README with setup instructions", "completed": false }
+]

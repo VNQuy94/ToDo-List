@@ -1,32 +1,23 @@
 import Todo from '../models/todo.js';
 import { AppError } from '../utils/appError.js';
 
-/**
- * Tầng Nghiệp Vụ (Service Layer) quản lý việc tương tác trực tiếp với Database.
- */
 class TodoService {
-  /**
-   * Lấy danh sách Todos có hỗ trợ tìm kiếm, lọc trạng thái, và phân trang.
-   */
+  // Get all todos with search, filter, and pagination
   async getTodos(filters = {}) {
     const { search, completed, page = 1, limit = 10 } = filters;
     const mongoQuery = {};
 
-    // Lọc theo trạng thái hoàn thành
     if (completed !== undefined) {
       mongoQuery.completed = completed;
     }
 
-    // Tìm kiếm không phân biệt hoa thường theo tiêu đề
     if (search) {
       mongoQuery.title = { $regex: search, $options: 'i' };
     }
 
-    // Thực hiện tính toán phân trang
     const skip = (page - 1) * limit;
     const totalItems = await Todo.countDocuments(mongoQuery);
     
-    // Sắp xếp các Todo mới tạo lên đầu tiên
     const data = await Todo.find(mongoQuery)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -45,39 +36,31 @@ class TodoService {
     };
   }
 
-  /**
-   * Tạo Todo mới.
-   */
+  // Create a new todo
   async createTodo(todoData) {
     return await Todo.create(todoData);
   }
 
-  /**
-   * Cập nhật Todo.
-   */
+  // Update a todo by ID
   async updateTodo(id, updateData) {
-    // returnDocument: 'after' (thay cho new: true đã lỗi thời) đảm bảo trả về dữ liệu mới nhất sau khi update
-    // runValidators: true đảm bảo kiểm tra các điều kiện validate của Schema khi cập nhật
     const todo = await Todo.findByIdAndUpdate(id, updateData, {
       returnDocument: 'after',
       runValidators: true,
     });
 
     if (!todo) {
-      throw new AppError('Không tìm thấy Todo với ID được yêu cầu.', 404);
+      throw new AppError('Todo not found with the requested ID.', 404);
     }
 
     return todo;
   }
 
-  /**
-   * Xóa Todo.
-   */
+  // Delete a todo by ID
   async deleteTodo(id) {
     const todo = await Todo.findByIdAndDelete(id);
 
     if (!todo) {
-      throw new AppError('Không tìm thấy Todo với ID được yêu cầu.', 404);
+      throw new AppError('Todo not found with the requested ID.', 404);
     }
 
     return todo;

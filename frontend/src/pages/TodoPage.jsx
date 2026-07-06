@@ -15,11 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-/**
- * Component Trang quản lý Todo (TodoPage)
- * Đóng vai trò hiển thị Bố cục giao diện (Presentation Layout).
- * Nhận state và callback từ Custom Hook useTodo.
- */
+// TodoPage Presentation Component
 export default function TodoPage() {
   const {
     todos,
@@ -59,7 +55,7 @@ export default function TodoPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hiển thị Card lỗi khi API GET thất bại */}
+      {/* Show Error Card if API GET fails */}
       {error ? (
         <Card className="border-destructive/30 bg-destructive/5 rounded-xl overflow-hidden shadow-md">
           <CardHeader className="p-6 flex flex-col items-center justify-center text-center space-y-4">
@@ -68,10 +64,10 @@ export default function TodoPage() {
             </div>
             <div className="space-y-1">
               <CardTitle className="text-xl font-bold tracking-tight text-destructive">
-                Đã xảy ra lỗi kết nối
+                Connection Error
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground max-w-sm">
-                {error.message || 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại trạng thái Docker/Backend.'}
+                {error.message || 'Unable to connect to the server. Please check your Docker/Backend status.'}
               </CardDescription>
             </div>
             <Button
@@ -79,7 +75,7 @@ export default function TodoPage() {
               className="bg-destructive hover:bg-destructive/80 text-white flex gap-2 items-center px-4 transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
-              <span>Thử lại</span>
+              <span>Retry</span>
             </Button>
           </CardHeader>
         </Card>
@@ -87,14 +83,14 @@ export default function TodoPage() {
         <Card className="border-border bg-white shadow-md rounded-xl overflow-hidden">
           <CardHeader className="bg-stone-50/50 border-b border-border py-6 px-6">
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-              Quản lý công việc
+              Task Manager
             </CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
-              Tạo mới và lọc danh sách các đầu việc từ cơ sở dữ liệu thật của Backend.
+              Create and filter your tasks linked to the backend database.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            {/* Form tạo mới */}
+            {/* Create Form */}
             <div>
               <TodoForm
                 value={newTitle}
@@ -106,7 +102,7 @@ export default function TodoPage() {
               />
             </div>
 
-            {/* Bộ lọc và Tìm kiếm */}
+            {/* Filters & Search */}
             <div className="pt-2 border-t border-border/60">
               <TodoToolbar
                 search={search}
@@ -117,10 +113,10 @@ export default function TodoPage() {
               />
             </div>
 
-            {/* Danh sách Todo thực tế từ API */}
+            {/* Todo List */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
-                Danh sách công việc ({todos.length})
+                Tasks ({todos.length})
               </label>
               <TodoList
                 todos={todos}
@@ -135,7 +131,7 @@ export default function TodoPage() {
         </Card>
       )}
 
-      {/* Dialog chỉnh sửa tiêu đề (Sub-component) */}
+      {/* Edit Dialog */}
       <EditTodoDialog
         isOpen={editingTodo !== null}
         onClose={() => setEditingTodo(null)}
@@ -146,7 +142,7 @@ export default function TodoPage() {
         error={dialogError}
       />
 
-      {/* AlertDialog xác nhận xóa (Sub-component) */}
+      {/* Delete Confirmation Alert */}
       <DeleteConfirmDialog
         isOpen={todoToDeleteId !== null}
         onClose={() => setTodoToDeleteId(null)}

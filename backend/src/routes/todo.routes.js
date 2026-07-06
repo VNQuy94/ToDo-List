@@ -10,13 +10,13 @@ import {
 
 const router = Router();
 
-// Đường dẫn: /api/todos
+// Route: /api/todos
 router
   .route('/')
   .get(validate(getTodosSchema), todoController.getTodos)
   .post(validate(createTodoSchema), todoController.createTodo);
 
-// Đường dẫn: /api/todos/:id
+// Route: /api/todos/:id
 router
   .route('/:id')
   .put(validate(updateTodoSchema), todoController.updateTodo)

@@ -4,10 +4,10 @@ const todoSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, 'Tiêu đề của Todo là bắt buộc'],
+      required: [true, 'Todo title is required'],
       trim: true,
-      minlength: [3, 'Tiêu đề phải có ít nhất 3 ký tự'],
-      maxlength: [100, 'Tiêu đề không được vượt quá 100 ký tự'],
+      minlength: [3, 'Title must be at least 3 characters long'],
+      maxlength: [100, 'Title cannot exceed 100 characters'],
     },
     completed: {
       type: Boolean,

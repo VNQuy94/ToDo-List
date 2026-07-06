@@ -8,9 +8,9 @@ describe('SearchBar Component', () => {
     // Arrange: Render component
     render(<SearchBar value="" onChange={() => {}} />);
 
-    // Assert: Xác minh ô tìm kiếm và nhãn tiếp cận hiển thị chuẩn
-    expect(screen.getByLabelText('Tìm kiếm công việc')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Tìm kiếm công việc/i)).toBeInTheDocument();
+    // Assert: Verify search input and accessibility label
+    expect(screen.getByLabelText('Search tasks')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Search tasks/i)).toBeInTheDocument();
   });
 
   it('should trigger onChange callback when user types (Arrange/Act/Assert)', () => {
@@ -19,11 +19,11 @@ describe('SearchBar Component', () => {
     // Arrange: Render component
     render(<SearchBar value="" onChange={handleChange} />);
 
-    // Act: Nhập nội dung tìm kiếm
-    const input = screen.getByPlaceholderText(/Tìm kiếm công việc/i);
-    fireEvent.change(input, { target: { value: 'Lau nhà' } });
+    // Act: Type search query
+    const input = screen.getByPlaceholderText(/Search tasks/i);
+    fireEvent.change(input, { target: { value: 'Clean room' } });
 
-    // Assert: Xác minh callback truyền đúng ký tự
-    expect(handleChange).toHaveBeenCalledWith('Lau nhà');
+    // Assert: Verify callback
+    expect(handleChange).toHaveBeenCalledWith('Clean room');
   });
 });

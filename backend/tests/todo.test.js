@@ -1,4 +1,4 @@
-import './setup.js'; // Nạp database test lifecycle hooks
+import './setup.js';
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from '../src/app.js';
@@ -6,9 +6,9 @@ import Todo from '../src/models/todo.js';
 
 describe('Todo API Integration Tests', () => {
   
-  describe('POST /api/todos (Tạo mới Todo)', () => {
-    it('sẽ tạo mới thành công nếu dữ liệu hợp lệ', async () => {
-      const payload = { title: 'Học lập trình Backend' };
+  describe('POST /api/todos', () => {
+    it('should create a todo successfully with valid data', async () => {
+      const payload = { title: 'Learn Backend Development' };
       
       const res = await request(app)
         .post('/api/todos')
@@ -20,13 +20,12 @@ describe('Todo API Integration Tests', () => {
       expect(res.body.data.completed).toBe(false);
       expect(res.body.data).toHaveProperty('_id');
       
-      // Kiểm tra DB lưu trữ thực tế
       const todoInDb = await Todo.findById(res.body.data._id);
       expect(todoInDb).not.toBeNull();
       expect(todoInDb.title).toBe(payload.title);
     });
 
-    it('sẽ trả về lỗi 400 nếu tiêu đề quá ngắn (dưới 3 ký tự)', async () => {
+    it('should return 400 if title is too short (under 3 characters)', async () => {
       const payload = { title: 'Ab' };
 
       const res = await request(app)
@@ -39,7 +38,7 @@ describe('Todo API Integration Tests', () => {
       expect(res.body.errors[0].field).toBe('body.title');
     });
 
-    it('sẽ trả về lỗi 400 nếu thiếu tiêu đề', async () => {
+    it('should return 400 if title is missing', async () => {
       const res = await request(app)
         .post('/api/todos')
         .send({});
@@ -49,8 +48,8 @@ describe('Todo API Integration Tests', () => {
     });
   });
 
-  describe('GET /api/todos (Lấy danh sách Todos)', () => {
-    it('sẽ trả về mảng rỗng nếu chưa có dữ liệu', async () => {
+  describe('GET /api/todos', () => {
+    it('should return an empty list if no data exists', async () => {
       const res = await request(app).get('/api/todos');
 
       expect(res.status).toBe(200);
@@ -59,15 +58,13 @@ describe('Todo API Integration Tests', () => {
       expect(res.body.pagination.totalItems).toBe(0);
     });
 
-    it('sẽ lọc và phân trang chính xác', async () => {
-      // Seed data
+    it('should filter and paginate correctly', async () => {
       await Todo.create([
-        { title: 'Học bài Node.js', completed: true },
-        { title: 'Học bài React', completed: false },
-        { title: 'Đi chạy bộ', completed: false }
+        { title: 'Learn Node.js', completed: true },
+        { title: 'Learn React', completed: false },
+        { title: 'Go running', completed: false }
       ]);
 
-      // Lọc theo completed=false
       const resFilter = await request(app)
         .get('/api/todos')
         .query({ completed: 'false' });
@@ -76,42 +73,40 @@ describe('Todo API Integration Tests', () => {
       expect(resFilter.body.data.length).toBe(2);
       expect(resFilter.body.pagination.totalItems).toBe(2);
 
-      // Tìm kiếm theo từ khóa 'bài'
       const resSearch = await request(app)
         .get('/api/todos')
-        .query({ search: 'bài' });
+        .query({ search: 'Learn' });
 
       expect(resSearch.status).toBe(200);
       expect(resSearch.body.data.length).toBe(2);
 
-      // Phân trang
       const resPage = await request(app)
         .get('/api/todos')
         .query({ page: 2, limit: 2 });
 
       expect(resPage.status).toBe(200);
-      expect(resPage.body.data.length).toBe(1); // tổng 3, trang 1 lấy 2, trang 2 lấy 1
+      expect(resPage.body.data.length).toBe(1);
     });
   });
 
-  describe('PUT /api/todos/:id (Cập nhật Todo)', () => {
-    it('sẽ cập nhật thành công nếu ID và dữ liệu hợp lệ', async () => {
-      const todo = await Todo.create({ title: 'Đi mua đồ ăn' });
+  describe('PUT /api/todos/:id', () => {
+    it('should update a todo successfully with valid ID and data', async () => {
+      const todo = await Todo.create({ title: 'Buy groceries' });
 
       const res = await request(app)
         .put(`/api/todos/${todo._id}`)
-        .send({ completed: true, title: 'Đi siêu thị mua đồ ăn' });
+        .send({ completed: true, title: 'Buy groceries at supermarket' });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.completed).toBe(true);
-      expect(res.body.data.title).toBe('Đi siêu thị mua đồ ăn');
+      expect(res.body.data.title).toBe('Buy groceries at supermarket');
 
       const updatedTodoInDb = await Todo.findById(todo._id);
       expect(updatedTodoInDb.completed).toBe(true);
     });
 
-    it('sẽ báo lỗi 404 nếu không tìm thấy ID', async () => {
+    it('should return 404 if ID is not found', async () => {
       const nonExistentId = '111111111111111111111111';
       const res = await request(app)
         .put(`/api/todos/${nonExistentId}`)
@@ -119,23 +114,23 @@ describe('Todo API Integration Tests', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('Không tìm thấy Todo');
+      expect(res.body.message).toContain('Todo not found');
     });
 
-    it('sẽ báo lỗi 400 nếu truyền ID sai định dạng', async () => {
+    it('should return 400 if ID is invalid format', async () => {
       const res = await request(app)
-        .put('/api/todos/id_sai_dinh_dang')
+        .put('/api/todos/invalid_id_format')
         .send({ completed: true });
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain('không hợp lệ');
+      expect(res.body.message).toContain('Invalid');
     });
   });
 
-  describe('DELETE /api/todos/:id (Xóa Todo)', () => {
-    it('sẽ xóa thành công Todo nếu ID hợp lệ', async () => {
-      const todo = await Todo.create({ title: 'Bài tập về nhà' });
+  describe('DELETE /api/todos/:id', () => {
+    it('should delete a todo successfully with valid ID', async () => {
+      const todo = await Todo.create({ title: 'Homework' });
 
       const res = await request(app).delete(`/api/todos/${todo._id}`);
 
@@ -147,7 +142,7 @@ describe('Todo API Integration Tests', () => {
       expect(deletedInDb).toBeNull();
     });
 
-    it('sẽ báo lỗi 404 nếu không tìm thấy ID', async () => {
+    it('should return 404 if ID is not found', async () => {
       const nonExistentId = '222222222222222222222222';
       const res = await request(app).delete(`/api/todos/${nonExistentId}`);
 
@@ -155,5 +150,4 @@ describe('Todo API Integration Tests', () => {
       expect(res.body.success).toBe(false);
     });
   });
-
 });

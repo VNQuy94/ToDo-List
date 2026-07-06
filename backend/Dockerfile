@@ -5,10 +5,10 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Cài đặt pnpm toàn cục
+# Install pnpm globally
 RUN npm install -g pnpm
 
-# Sao chép các tệp cấu hình dependencies
+# Copy dependency configuration files
 COPY package.json pnpm-lock.yaml* ./
 
 # ==========================================
@@ -16,19 +16,19 @@ COPY package.json pnpm-lock.yaml* ./
 # ==========================================
 FROM base AS development
 
-# Cài đặt toàn bộ dependencies (bao gồm cả devDependencies)
+# Install all dependencies including devDependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Sao chép mã nguồn ứng dụng
+# Copy application source code
 COPY src ./src
 
-# Đổi quyền sở hữu sang user node
+# Change ownership to non-root node user
 RUN chown -R node:node /app
 USER node
 
 EXPOSE 5000
 
-# Khởi chạy bằng chế độ watch có sẵn của Node v20 để tự reload khi sửa file nguồn
+# Start with native Node.js v20 file watcher
 CMD ["node", "--watch", "src/server.js"]
 
 # ==========================================
@@ -36,7 +36,7 @@ CMD ["node", "--watch", "src/server.js"]
 # ==========================================
 FROM base AS dependencies
 
-# Chỉ cài đặt dependencies dùng cho chạy thực tế
+# Install production dependencies only
 RUN pnpm install --prod --no-frozen-lockfile
 
 # ==========================================
@@ -48,10 +48,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Sao chép các thành phần tối giản từ các Stage trước
+# Copy built node_modules and source code
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY src ./src
 
+# Use non-root node user
 RUN chown -R node:node /app
 USER node
 

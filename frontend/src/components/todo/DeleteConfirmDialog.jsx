@@ -11,10 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-/**
- * Component AlertDialog xác nhận xóa công việc (DeleteConfirmDialog)
- * Là linh kiện UI thuần túy (Presentation Component).
- */
+// DeleteConfirmDialog Component
 export default function DeleteConfirmDialog({ isOpen, onClose, onConfirm, isDeleting }) {
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose && onClose()}>

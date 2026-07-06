@@ -5,10 +5,10 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Cài đặt pnpm toàn cục
+# Install pnpm globally
 RUN npm install -g pnpm
 
-# Sao chép các tệp cấu hình dependencies
+# Copy dependency configuration files
 COPY package.json pnpm-lock.yaml* ./
 
 # ==========================================
@@ -16,19 +16,19 @@ COPY package.json pnpm-lock.yaml* ./
 # ==========================================
 FROM base AS development
 
-# Cài đặt toàn bộ dependencies
+# Install all dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Sao chép mã nguồn ứng dụng
+# Copy application source code
 COPY . .
 
-# Phân quyền user node
+# Use non-root node user
 RUN chown -R node:node /app
 USER node
 
 EXPOSE 5173
 
-# Khởi chạy Vite Dev Server hỗ trợ Hot Module Replacement (HMR)
+# Start Vite Dev Server with HMR enabled
 CMD ["pnpm", "dev", "--host"]
 
 # ==========================================
@@ -38,13 +38,13 @@ FROM base AS builder
 
 RUN pnpm install --no-frozen-lockfile
 
-# Nhận biến môi trường tại thời điểm Build để truyền vào Vite Compiler
+# Pass build arguments to Vite environment variables
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY . .
 
-# Thực hiện biên dịch mã nguồn
+# Compile static assets
 RUN pnpm build
 
 # ==========================================
@@ -54,12 +54,13 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Cài đặt máy chủ tĩnh serve toàn cục
+# Install static file server package globally
 RUN npm install -g serve
 
-# Sao chép thư mục dist từ Stage builder
+# Copy compiled static assets from builder stage
 COPY --from=builder /app/dist ./dist
 
+# Use non-root node user
 RUN chown -R node:node /app
 USER node
 

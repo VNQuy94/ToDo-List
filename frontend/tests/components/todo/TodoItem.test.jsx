@@ -6,7 +6,7 @@ import TodoItem from '@/components/todo/TodoItem';
 describe('TodoItem Component', () => {
   const mockTodo = {
     _id: '123',
-    title: 'Học React Testing Library',
+    title: 'Learn React Testing Library',
     completed: false,
   };
 
@@ -22,11 +22,11 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Assert: Xác minh hiển thị đúng tiêu đề, checkbox và các nút sửa/xóa với nhãn tiếp cận
-    expect(screen.getByText('Học React Testing Library')).toBeInTheDocument();
+    // Assert: Verify title, checkbox, and action buttons are present with correct aria-labels
+    expect(screen.getByText('Learn React Testing Library')).toBeInTheDocument();
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Chỉnh sửa công việc/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Xóa công việc/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Edit task/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Delete task/i })).toBeInTheDocument();
   });
 
   it('should trigger onToggle callback when clicking checkbox (Arrange/Act/Assert)', () => {
@@ -43,11 +43,11 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Act: Nhập chọn checkbox
+    // Act: Click checkbox
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
 
-    // Assert: Xác minh callback onToggle được gọi với ID và trạng thái nghịch đảo
+    // Assert: Verify onToggle triggers with ID and boolean value
     expect(handleToggle).toHaveBeenCalledWith('123', true);
   });
 
@@ -65,11 +65,11 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Act: Nhấp chọn biểu tượng sửa
-    const editButton = screen.getByRole('button', { name: /Chỉnh sửa công việc/i });
+    // Act: Click edit button
+    const editButton = screen.getByRole('button', { name: /Edit task/i });
     fireEvent.click(editButton);
 
-    // Assert: Xác minh callback onEdit được gọi với đối tượng todo
+    // Assert: Verify onEdit triggers with todo object
     expect(handleEdit).toHaveBeenCalledWith(mockTodo);
   });
 
@@ -87,18 +87,18 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Act: Nhấp chọn biểu tượng xóa
-    const deleteButton = screen.getByRole('button', { name: /Xóa công việc/i });
+    // Act: Click delete button
+    const deleteButton = screen.getByRole('button', { name: /Delete task/i });
     fireEvent.click(deleteButton);
 
-    // Assert: Xác minh callback onDelete được gọi với ID tương ứng
+    // Assert: Verify onDelete triggers with ID
     expect(handleDelete).toHaveBeenCalledWith('123');
   });
 
   it('should apply line-through styling if completed is true (Arrange/Assert)', () => {
     const completedTodo = { ...mockTodo, completed: true };
 
-    // Arrange: Render component hoàn thành
+    // Arrange: Render completed item
     render(
       <TodoItem
         todo={completedTodo}
@@ -109,13 +109,13 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Assert: Đảm bảo nhãn tiêu đề có class line-through
-    const label = screen.getByText('Học React Testing Library');
+    // Assert: Verify line-through styling
+    const label = screen.getByText('Learn React Testing Library');
     expect(label).toHaveClass('line-through');
   });
 
   it('should disable interaction elements when isPending is true (Arrange/Assert)', () => {
-    // Arrange: Render với isPending = true
+    // Arrange: Render with isPending = true
     render(
       <TodoItem
         todo={mockTodo}
@@ -126,10 +126,10 @@ describe('TodoItem Component', () => {
       />
     );
 
-    // Assert: Khóa checkbox và các nút bấm sửa, xóa
+    // Assert: Verify inputs and buttons are disabled
     const checkbox = screen.getByRole('checkbox');
-    const editButton = screen.getByRole('button', { name: /Chỉnh sửa công việc/i });
-    const deleteButton = screen.getByRole('button', { name: /Xóa công việc/i });
+    const editButton = screen.getByRole('button', { name: /Edit task/i });
+    const deleteButton = screen.getByRole('button', { name: /Delete task/i });
 
     expect(checkbox).toBeDisabled();
     expect(editButton).toBeDisabled();
