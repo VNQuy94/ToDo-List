@@ -10,7 +10,10 @@
     "test": "pnpm --filter backend test",
     "seed": "node scripts/seed.js",
     "seed:clear": "node scripts/clear.js",
-    "seed:reset": "node scripts/reset.js"
+    "seed:reset": "node scripts/reset.js",
+    "docker:seed": "docker compose run --rm db-seeder",
+    "docker:seed:clear": "docker compose run --rm db-seeder sh -c 'npm install -g pnpm && pnpm install --prod && node scripts/clear.js'",
+    "docker:seed:reset": "docker compose run --rm db-seeder sh -c 'npm install -g pnpm && pnpm install --prod && node scripts/reset.js'"
   },
   "engines": {
     "node": ">=18.0.0"
