@@ -51,6 +51,13 @@ export default function useTodo() {
       setDebouncedSearch(search);
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
+        const currentSearch = next.get('search') || '';
+        
+        // Prevent resetting page if search term hasn't changed
+        if (currentSearch === search.trim()) {
+          return prev;
+        }
+
         if (search.trim()) {
           next.set('search', search.trim());
         } else {
