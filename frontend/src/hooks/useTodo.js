@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { getTodosApi, createTodoApi, updateTodoApi, deleteTodoApi } from '@/api/todo.api';
 import { todoSchema } from '@/schemas/todo.schema';
+import useSearchParams from './useSearchParams';
 
-// Hook to manage todo state and operations
+// Hook to manage todo state, operations, and URL-based pagination/filtering
 export default function useTodo() {
   const [todos, setTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,27 +22,90 @@ export default function useTodo() {
   const [todoToDeleteId, setTodoToDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [filter, setFilter] = useState('all');
+  // URL Query Parameters synchronization
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Debounce search input (500ms delay)
+  // Extract pagination and filters from URL or use defaults
+  const pageParam = parseInt(searchParams.get('page') || '1', 10);
+  const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  
+  const urlFilter = searchParams.get('filter') || 'all';
+  const urlSearch = searchParams.get('search') || '';
+
+  // Local UI states
+  const [search, setSearchState] = useState(urlSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
+  const [filter, setFilterState] = useState(urlFilter);
+
+  // Pagination metadata state from backend response
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
+
+  // Debounce search input (500ms delay) and update URL
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (search.trim()) {
+          next.set('search', search.trim());
+        } else {
+          next.delete('search');
+        }
+        next.delete('page'); // Reset page to 1 on search change
+        return next;
+      });
     }, 500);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [search]);
+    return () => clearTimeout(handler);
+  }, [search, setSearchParams]);
+
+  // Set filter and reset page in URL
+  const setFilter = useCallback((newFilter) => {
+    setFilterState(newFilter);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newFilter === 'all') {
+        next.delete('filter');
+      } else {
+        next.set('filter', newFilter);
+      }
+      next.delete('page'); // Reset page to 1 on filter change
+      return next;
+    });
+  }, [setSearchParams]);
+
+  // Direct search setter for input onChange
+  const setSearch = useCallback((newSearch) => {
+    setSearchState(newSearch);
+  }, []);
+
+  // Update page parameter in URL
+  const handlePageChange = useCallback((newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newPage <= 1) {
+        next.delete('page');
+      } else {
+        next.set('page', newPage.toString());
+      }
+      return next;
+    });
+  }, [setSearchParams]);
 
   // Fetch todos from backend
   const fetchTodos = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const params = {};
+      const params = {
+        page,
+        limit: 10,
+      };
       if (debouncedSearch.trim()) {
         params.search = debouncedSearch.trim();
       }
@@ -52,6 +116,12 @@ export default function useTodo() {
       const response = await getTodosApi(params);
       if (response && response.success) {
         setTodos(response.data || []);
+        setPagination(response.pagination || {
+          totalItems: response.data?.length || 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        });
       } else {
         throw new Error('Server responded with a failure status.');
       }
@@ -63,7 +133,7 @@ export default function useTodo() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, filter]);
+  }, [debouncedSearch, filter, page]);
 
   useEffect(() => {
     fetchTodos();
@@ -207,6 +277,9 @@ export default function useTodo() {
     setSearch,
     filter,
     setFilter,
+    
+    pagination,
+    handlePageChange,
 
     newTitle,
     setNewTitle,
