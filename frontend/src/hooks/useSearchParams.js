@@ -19,13 +19,14 @@ export default function useSearchParams() {
   }, []);
 
   const setSearchParams = useCallback((newParams) => {
-    const nextParams = typeof newParams === 'function' ? newParams(searchParams) : newParams;
+    const currentParams = new URLSearchParams(window.location.search);
+    const nextParams = typeof newParams === 'function' ? newParams(currentParams) : newParams;
     const newSearch = nextParams.toString();
     const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
     
     window.history.pushState(null, '', newUrl);
     window.dispatchEvent(new Event('popstate'));
-  }, [searchParams]);
+  }, []);
 
   return [searchParams, setSearchParams];
 }
