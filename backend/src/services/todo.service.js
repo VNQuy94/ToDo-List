@@ -19,7 +19,7 @@ class TodoService {
     const totalItems = await Todo.countDocuments(mongoQuery);
     
     const data = await Todo.find(mongoQuery)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
       .limit(limit);
 
